@@ -1,6 +1,6 @@
 <?php
 
-namespace Jerive\Bundle\WorkflowBundle\Workflow\Transition;
+namespace Jerive\Bundle\WorkflowBundle\Transition;
 
 /**
  *

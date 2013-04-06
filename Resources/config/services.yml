@@ -1,6 +1,0 @@
-parameters:
-    jerive_workflow.manager.class: Jerive\Bundle\WorkflowBundle\Workflow\WorkflowManager
-
-services:
-    jerive_workflow.manager:
-        class: %jerive_workflow.manager.class%
