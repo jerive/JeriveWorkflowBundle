@@ -4,7 +4,6 @@ namespace Jerive\Bundle\WorkflowBundle\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 use Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Transition;
@@ -35,7 +34,7 @@ class PetriNetBuildPass implements CompilerPassInterface
             if (is_dir($dir = dirname((new \ReflectionClass($bundleClass))->getFileName()) . '/Workflow')) {
                 foreach((new Finder)->files()->name('*.php')->in($dir) as $file) {
                     try {
-                        $class = new \ReflectionClass($this->getClassInFile($file));
+                        $class = new \ReflectionClass($this->getFirstClassInFile($file));
                         $this->addTransition($class, $reader->getClassAnnotation($class, $annotationTransition));
                         $this->addPlace($class, $reader->getClassAnnotation($class, $annotationPlace));
                     } catch (\ReflectionException $e) { }
@@ -64,7 +63,13 @@ class PetriNetBuildPass implements CompilerPassInterface
         }
     }
 
-    protected function getClassInFile($file)
+    /**
+     * Returns the full class name for the first class in the file.
+     *
+     * @param type $file
+     * @return boolean
+     */
+    protected function getFirstClassInFile($file)
     {
         $tokens = token_get_all(file_get_contents($file));
         $namespace = '';

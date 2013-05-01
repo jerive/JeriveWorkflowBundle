@@ -9,7 +9,7 @@
     </parameters>
     <services>
         <service id="jerive_workflow.manager" class="%jerive_workflow.manager.class%">
-            
+    
         </service>
     </services>
 </container>

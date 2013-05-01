@@ -10,9 +10,10 @@ use Doctrine\Common\Annotations\Annotation;
  */
 final class Place extends Annotation
 {
-
     /** @var string */
-    public $serviceId;
-    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Place> */
+    public $serviceId = null;
+    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Transition> */
     public $output = array();
+    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Transition> */
+    public $input = array();
 }

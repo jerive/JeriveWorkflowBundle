@@ -2,39 +2,45 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
-
-/**
- * @ORM\Entity()
- * @ORM\Table(name="jerive_token")
- */
-class Token
+abstract class Token implements HasCaseInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
     protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
     protected $workflow;
 
-    /**
-     * A reference to the case (ie entity)
-     * (class + ID)
-     *
-     * @ORM\Column(type="string")
-     */
-    protected $caseRef;
+    protected $place;
 
-    /**
-     * Current places the case is currently located in
-     *
-     * @ORM\OneToMany(targetEntity="TokenPlace", mappedBy="token")
-     */
-    protected $places;
+    protected $created_date;
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setPlace($place)
+    {
+        $this->place = $place;
+        return $this;
+    }
+
+    public function getPlace()
+    {
+        return $this->place;
+    }
+
+    public function setWorkflow($workflow)
+    {
+        $this->workflow = $workflow;
+        return $this;
+    }
+
+    public function getWorkflow()
+    {
+        return $this->workflow;
+    }
+
+    public function prePersist()
+    {
+        $this->created_date = new \DateTime('now');
+    }
 }
