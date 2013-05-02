@@ -2,6 +2,8 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * Description of Workflow
  *
@@ -9,7 +11,13 @@ namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
  */
 class Transition extends Node
 {
+    /**
+     * @Assert\Type(type="string")
+     */
     protected $class;
 
+    /**
+     * @Assert\Type(type="string")
+     */
     protected $serviceId;
 }

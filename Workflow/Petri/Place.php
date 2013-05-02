@@ -1,6 +1,7 @@
 <?php
 
 namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Description of Workflow
@@ -9,7 +10,23 @@ namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
  */
 class Place extends Node
 {
-    protected $input;
+    /**
+     * @Assert\Type(type="bool")
+     */
+    protected $input = false;
 
-    protected $output;
+    /**
+     * @Assert\Type(type="bool")
+     */
+    protected $output = false;
+
+    public function isInput()
+    {
+        return $this->input;
+    }
+
+    public function isOutput()
+    {
+        return $this->output;
+    }
 }

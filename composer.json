@@ -1,0 +1,22 @@
+{
+    "name": "jerive/workflow-bundle",
+    "description": "Workflow management using Petri Nets",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "jerive",
+            "email": "jerome.viveret@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+
+    },
+    "require-dev": {
+
+    },
+    "autoload": {
+        "psr-0": { "Jerive\\Bundle\\WorkflowBundle": "" }
+    },
+    "target-dir": "Jerive/Bundle/WorkflowBundle"
+}

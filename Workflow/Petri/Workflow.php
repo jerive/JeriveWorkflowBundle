@@ -2,20 +2,24 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * Description of Workflow
  *
- * @author jerome
+ * @Assert\Callback(methods={"validateConnex"})
  */
 class Workflow
 {
     /**
      * @var Place
+     * @Assert\NotBlank()
      */
     protected $input;
 
     /**
      * @var Place
+     * @Assert\NotBlank()
      */
     protected $output;
 
@@ -41,17 +45,35 @@ class Workflow
 
     public function addLink(Node $a, Node $b)
     {
-        if (get_class($a) == get_class($b)) {
-            throw new \Exception('Cannot link two places nor two transitions');
+        if ($this->isLinked($a, $b)) {
+            throw new Exception\IntegrityException('Trying to link two linked nodes');
         }
 
-        $this->addNode($a)->addNode($b);
+        if (!$this->hasNode($a)) {
+            $this->addNode($a);
+        }
+
+        if (!$this->hasNode($b)) {
+            $this->addNode($b);
+        }
 
         if ($a instanceof Transition) {
             $this->transitionsToPlaces[$a->getName()][] = $b->getName();
         } else {
             $this->placesToTransitions[$a->getName()][] = $b->getName();
         }
+
+        return $this;
+    }
+
+    public function isLinked(Node $a, Node $b)
+    {
+        if (get_class($a) == get_class($b)) {
+            throw new \Exception('Cannot link two places nor two transitions');
+        }
+
+        return array_search($b->getName(), $this->getOriginalSet($a)) !== false
+        ;
     }
 
     public function hasNode(Node $node)
@@ -65,10 +87,21 @@ class Workflow
 
     public function addNode(Node $node)
     {
+        if ($this->hasNode($node)) {
+            throw new Exception\IntegrityException(sprintf('Node %s already exists', $node->getName()));
+        }
+
         if ($node instanceof Transition) {
             $this->transitions[$node->getName()] = $node;
-        } else {
+        } elseif ($node instanceof Place) {
             $this->places[$node->getName()] = $node;
+            if ($node->isInput()) {
+                $this->setInput($node);
+            }
+
+            if ($node->isOutput()) {
+                $this->setOutput($node);
+            }
         }
 
         return $this;
@@ -76,14 +109,38 @@ class Workflow
 
     public function setInput(Place $input)
     {
+        if (isset($this->input)) {
+            throw new Exception\IntegrityException('Cannot have two input nodes');
+        }
+
         $this->input = $input;
         return $this;
     }
 
     public function setOutput(Place $output)
     {
-        $this->input = $output;
+        if (isset($this->output)) {
+            throw new Exception\IntegrityException('Cannot have two output nodes');
+        }
+
+        $this->output = $output;
         return $this;
+    }
+
+    /**
+     * @return Place
+     */
+    public function getInput()
+    {
+        return $this->input;
+    }
+
+    /**
+     * @return Place
+     */
+    public function getOutput()
+    {
+        return $this->output;
     }
 
     /**
@@ -94,16 +151,9 @@ class Workflow
     public function getInputSet(Node $node)
     {
         $inputSet = array();
+        $getter   = $this->getTargetCallback($node);
 
-        if ($node instanceof Transition) {
-            $originalSet = $this->placesToTransitions;
-            $getter = 'getPlaceByName';
-        } elseif ($node instanceof Place) {
-            $originalSet = $this->transitionsToPlaces;
-            $getter = 'getTransitionByName';
-        }
-
-        foreach($originalSet as $name => $nodes) {
+        foreach($this->getOriginalFullSet($node) as $name => $nodes) {
             if (false !== array_search($node->getName(), $nodes)) {
                 $inputSet[$name] = $this->$getter($name);
             }
@@ -119,11 +169,13 @@ class Workflow
      */
     public function getOutputSet(Node $node)
     {
-        if ($node instanceof Transition) {
-            return array_map(array($this, 'getPlaceByName'), $node->getName());
-        } elseif ($node instanceof Place) {
-            return array_map(array($this, 'getTransitionByName'), $node->getName());
+        $outputSet = array();
+        $getter    = $this->getTargetCallback($node);
+        foreach($this->getOriginalSet($node) as $name) {
+            $outputSet[$name] = $this->$getter($name);
         }
+
+        return $outputSet;
     }
 
     /**
@@ -144,5 +196,40 @@ class Workflow
     public function getTransitionByName($name)
     {
         return $this->transitions[$name];
+    }
+
+    /**
+     *
+     * @param Node $node
+     * @return array<Node>
+     */
+    protected function getOriginalSet(Node $node)
+    {
+        $baseSet = $node instanceof Transition ? $this->transitionsToPlaces : $this->placesToTransitions;
+
+        if (isset($baseSet[$node->getName()])) {
+            return $baseSet[$node->getName()];
+        }
+
+        return array();
+    }
+
+    protected function getOriginalFullSet(Node $node)
+    {
+        return $node instanceof Transition ? $this->placesToTransitions : $this->transitionsToPlaces;
+    }
+
+    /**
+     * @param Node $node
+     * @return string
+     */
+    protected function getTargetCallback(Node $node)
+    {
+        return $node instanceof Transition ? 'getPlaceByName' : 'getTransitionByName';
+    }
+
+    public function validateConnex()
+    {
+
     }
 }
