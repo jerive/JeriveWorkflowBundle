@@ -18,6 +18,8 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('toto', $wf->getInput()->getName());
         $this->assertEquals('lolo', $wf->getOutput()->getName());
+
+        $this->assertFalse($wf->isConnex());
     }
 
     /**
@@ -74,17 +76,18 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
         $wf = new Workflow;
         $wf
             ->addLink(
-                $t = new Transition(array('name' => 'trans')),
-                $p = new Place(array('name' => 'place'))
+                $p = new Place(array('name' => 'place', 'input' => true)),
+                $t = new Transition(array('name' => 'trans'))
             )
         ;
 
-        $this->assertEmpty($wf->getInputSet($t));
-        $this->assertEmpty($wf->getOutputSet($p));
-        $this->assertCount(1, $wf->getOutputSet($t));
-        $this->assertCount(1, $wf->getInputSet($p));
-        $this->assertArrayHasKey('trans', $wf->getInputSet($p));
-        $this->assertArrayHasKey('place', $wf->getOutputSet($t));
+        $this->assertEmpty($wf->getOutputSet($t));
+        $this->assertEmpty($wf->getInputSet($p));
+        $this->assertCount(1, $wf->getInputSet($t));
+        $this->assertCount(1, $wf->getOutputSet($p));
+        $this->assertArrayHasKey('trans', $wf->getOutputSet($p));
+        $this->assertArrayHasKey('place', $wf->getInputSet($t));
+        $this->assertTrue($wf->isConnex());
     }
 
     /**

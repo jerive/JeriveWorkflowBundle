@@ -3,6 +3,7 @@
 namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\ExecutionContext;
 
 /**
  * Description of Workflow
@@ -25,11 +26,13 @@ class Workflow
 
     /**
      * @var array
+     * @Assert\Valid()
      */
     protected $transitions = array();
 
     /**
      * @var array
+     * @Assert\Valid()
      */
     protected $places = array();
 
@@ -43,6 +46,14 @@ class Workflow
      */
     protected $placesToTransitions = array();
 
+    /**
+     * Adds a link between two nodes
+     *
+     * @param Node $a
+     * @param Node $b
+     * @return Workflow
+     * @throws Exception\IntegrityException
+     */
     public function addLink(Node $a, Node $b)
     {
         if ($this->isLinked($a, $b)) {
@@ -66,16 +77,29 @@ class Workflow
         return $this;
     }
 
+    /**
+     * Are two nodes linked ?
+     *
+     * @param Node $a
+     * @param Node $b
+     * @return bool
+     * @throws \Exception
+     */
     public function isLinked(Node $a, Node $b)
     {
         if (get_class($a) == get_class($b)) {
             throw new \Exception('Cannot link two places nor two transitions');
         }
 
-        return array_search($b->getName(), $this->getOriginalSet($a)) !== false
-        ;
+        return array_search($b->getName(), $this->getChildren($a)) !== false;
     }
 
+    /**
+     * Does the workflow own the node ?
+     *
+     * @param Node $node
+     * @return bool
+     */
     public function hasNode(Node $node)
     {
         if ($node instanceof Transition) {
@@ -85,6 +109,13 @@ class Workflow
         }
     }
 
+    /**
+     * Register a node with the workflow
+     *
+     * @param Node $node
+     * @return Workflow
+     * @throws Exception\IntegrityException
+     */
     public function addNode(Node $node)
     {
         if ($this->hasNode($node)) {
@@ -107,7 +138,7 @@ class Workflow
         return $this;
     }
 
-    public function setInput(Place $input)
+    protected function setInput(Place $input)
     {
         if (isset($this->input)) {
             throw new Exception\IntegrityException('Cannot have two input nodes');
@@ -117,7 +148,7 @@ class Workflow
         return $this;
     }
 
-    public function setOutput(Place $output)
+    protected function setOutput(Place $output)
     {
         if (isset($this->output)) {
             throw new Exception\IntegrityException('Cannot have two output nodes');
@@ -144,6 +175,7 @@ class Workflow
     }
 
     /**
+     * Get the input set for the node
      *
      * @param Node $node
      * @return array<Node>
@@ -163,6 +195,7 @@ class Workflow
     }
 
     /**
+     * Get the output set for the node
      *
      * @param Node $node
      * @return array<Node>
@@ -171,7 +204,7 @@ class Workflow
     {
         $outputSet = array();
         $getter    = $this->getTargetCallback($node);
-        foreach($this->getOriginalSet($node) as $name) {
+        foreach($this->getChildren($node) as $name) {
             $outputSet[$name] = $this->$getter($name);
         }
 
@@ -179,6 +212,7 @@ class Workflow
     }
 
     /**
+     * Return the place with name $name
      *
      * @param string $name
      * @return Place
@@ -189,7 +223,8 @@ class Workflow
     }
 
     /**
-     *
+     * Return the transition with name $name
+     * 
      * @param string $name
      * @return Transition
      */
@@ -203,7 +238,7 @@ class Workflow
      * @param Node $node
      * @return array<Node>
      */
-    protected function getOriginalSet(Node $node)
+    protected function getChildren(Node $node)
     {
         $baseSet = $node instanceof Transition ? $this->transitionsToPlaces : $this->placesToTransitions;
 
@@ -228,8 +263,39 @@ class Workflow
         return $node instanceof Transition ? 'getPlaceByName' : 'getTransitionByName';
     }
 
-    public function validateConnex()
+    public function validateConnex(ExecutionContext $ec)
     {
+        if (!$this->isConnex()) {
+            $ec->addViolation('This workflow is not connex');
+        }
+    }
 
+    public function isConnex()
+    {
+        return $this->deepWalk($this->getInput());
+    }
+
+    protected function deepWalk($places, $transitions = array())
+    {
+        if (!is_array($places)) {
+            $places = array($places);
+        }
+
+        $countPlaces      = count($places);
+        $countTransitions = count($transitions);
+
+        foreach($places as $place) {
+            $transitions = array_merge($transitions, $this->getOutputSet($place));
+        }
+
+        foreach($transitions as $transition) {
+            $places = array_merge($places, $this->getOutputSet($transition));
+        }
+
+        if (count($places) === $countPlaces && count($transitions) === $countTransitions) {
+            return count($this->places) === $countPlaces && count($this->transitions) === $countTransitions;
+        } else {
+            return $this->deepWalk($places, $transitions);
+        }
     }
 }

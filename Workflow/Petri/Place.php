@@ -1,10 +1,11 @@
 <?php
 
 namespace Jerive\Bundle\WorkflowBundle\Workflow\Petri;
+
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Description of Workflow
+ * Description of Place
  *
  * @author jerome
  */
