@@ -15,9 +15,7 @@
             <generator strategy="AUTO" />
         </id>
 
-        <field name="place" type="string" length="32" />
-
-        <field name="workflow" type="string" length="15" />
+        <field name="place" type="text" />
 
         <field name="created_date" type="datetime" />
 

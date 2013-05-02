@@ -13,17 +13,11 @@ abstract class UnitOfWork implements HasCaseInterface
 
     protected $hash;
 
-    protected $workflow;
-
     protected $transition;
 
-    protected $type;
-
-    protected $user;
-
-    protected $group;
-
     protected $created_date;
+
+    protected $processed_date;
 
     public function getId()
     {
@@ -33,28 +27,6 @@ abstract class UnitOfWork implements HasCaseInterface
     public function getHash()
     {
         return $this->hash;
-    }
-
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    public function setType($type)
-    {
-        $this->type = $type;
-        return $this;
-    }
-
-    public function getWorkflow()
-    {
-        return $this->workflow;
-    }
-
-    public function setWorkflow($workflow)
-    {
-        $this->workflow = $workflow;
-        return $this;
     }
 
     public function getTransition()

@@ -6,8 +6,8 @@
 
     <mapped-superclass name="Jerive\Bundle\WorkflowBundle\Entity\UnitOfWork">
         <indexes>
-            <index columns="workflow"/>
             <index columns="transition"/>
+            <index columns="created_date"/>
         </indexes>
 
         <id name="id" type="integer" column="id">
@@ -16,13 +16,11 @@
 
         <field name="hash" type="string" length="32" />
 
-        <field name="workflow" type="string" length="15" />
-
-        <field name="transition" type="string" length="15" />
-
-        <field name="type" type="string" length="1" />
+        <field name="transition" type="text" />
 
         <field name="created_date" type="datetime" />
+
+        <field name="processed_date" type="datetime" nullable="true"/>
 
         <lifecycle-callbacks>
             <lifecycle-callback type="prePersist" method="prePersist"/>
