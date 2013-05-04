@@ -248,7 +248,7 @@ class Workflow
      */
     public function isStronglyConnected()
     {
-        return count($this->getStronglyConnectedComponents()) === 1;
+        return count($this->getExtendedNet()->getStronglyConnectedComponents()) === 1;
     }
 
     public function validateConnected(ExecutionContext $ec)
@@ -260,7 +260,7 @@ class Workflow
 
     public function validateStrongConnectedness(ExecutionContext $ec)
     {
-        $stronglyConnectedComponents = $this->getStronglyConnectedComponents();
+        $stronglyConnectedComponents = $this->getExtendedNet()->getStronglyConnectedComponents();
         $count = count($stronglyConnectedComponents);
 
         if ($count !== 1) {
@@ -268,11 +268,17 @@ class Workflow
         }
     }
 
+    /**
+     * Check that output has no output set
+     * and input has no input set
+     *
+     * @return bool
+     */
     public function hasSpecialPlaces()
     {
         return
-            count($this->getOutputSet($this->getOutput())) == 0 &&
-            count($this->getInputSet($this->getInput())) == 0
+            0 === count($this->getOutputSet($this->getOutput())) &&
+            0 === count($this->getInputSet($this->getInput()))
         ;
     }
 
@@ -388,14 +394,6 @@ class Workflow
 
         $successors = $this->getOutputSet($node);
 
-        /**
-         * Strong connectedness is interesting
-         * for a workflow graph with this additional link
-         */
-        if ($node instanceof Place && $node->isOutput()) {
-            $successors[] = $this->getInput();
-        }
-
         foreach($successors as $successor) {
             if (!isset($successor->num)) {
                 $this->strongConnectednessDepthFirstTraversal($successor, $num, $partition, $stack);
@@ -413,6 +411,66 @@ class Workflow
                 $set[] = $popped;
             } while ($node !== $popped);
             $partition[] = $set;
+        }
+    }
+
+    /**
+     * Strong connectedness is interesting
+     * for the extension of the original net
+     *
+     * @return Workflow The extended petri net
+     */
+    public function getExtendedNet()
+    {
+        $extended = clone $this;
+        $additional = new Transition(['name' => '__EXTENSION__']);
+        $extended->addLink($extended->getOutput(), $additional);
+        $extended->addLink($additional, $extended->getInput());
+
+        return $extended;
+    }
+
+    /**
+     * Get a classical Petri Net
+     * @return Workflow The normalized petri net
+     */
+    public function getNormalizedNet()
+    {
+        $normalized = clone $this;
+
+        foreach($this->transitions as $transition) {
+            if ($transition->isExplicitOrJoin() || $transition->isExplicitOrSplit()) {
+                foreach($this->getInputSet($transition) as $key => $place) {
+                    $new = new Transition(array(
+                        'name'  => $transition->getName() . '_' . $key,
+                        'title' => $transition->getTitle(),
+                    ));
+
+                    $normalized->addLink($place, $new);
+
+                    foreach($normalized->getOutputSet($transition) as $key => $place) {
+                        $normalized->addLink($new, $place);
+                    }
+                }
+
+                $normalized->removeNode($transition);
+            }
+        }
+
+        return $normalized;
+    }
+
+    public function removeNode(Node $node)
+    {
+        if (!$this->hasNode($node)) {
+            throw new \LogicException('Cannot remove an unexisting node');
+        }
+
+        if ($node instanceof Transition) {
+            unset($this->transitions[$node->getName()]);
+            unset($this->transitionsToPlaces[$node->getName()]);
+        } else {
+            unset($this->places[$node->getName()]);
         }
     }
 }

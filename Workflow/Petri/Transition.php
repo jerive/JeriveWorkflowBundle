@@ -49,6 +49,16 @@ class Transition extends Node
      */
     protected $join = self::SPLIT_AND;
 
+    public function isExplicitOrSplit()
+    {
+        return $this->split === self::SPLIT_OR;
+    }
+
+    public function isExplicitOrJoin()
+    {
+        return $this->join === self::SPLIT_OR;
+    }
+
     public function getType()
     {
         return $this->type;
