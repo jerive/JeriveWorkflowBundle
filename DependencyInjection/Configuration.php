@@ -32,9 +32,9 @@ class Configuration implements ConfigurationInterface
                 ->requiresAtLeastOneElement()
                 ->prototype('array')
                 ->children()
-                    ->scalarNode('class')->isRequired()->validate()
+                    ->scalarNode('entity_class')->isRequired()->validate()
                         ->ifString()->then($classValidate)->end()->end()
-                    ->scalarNode('alias')->isRequired()->end()
+                    ->scalarNode('entity_alias')->isRequired()->end()
                     ->end()
                 ->end()
             ->end()
@@ -49,10 +49,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ;
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
 
         return $treeBuilder;
     }

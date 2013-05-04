@@ -159,6 +159,8 @@ class Workflow
             }
         }
 
+        $node->setWorkflow($this);
+
         return $this;
     }
 
@@ -431,7 +433,8 @@ class Workflow
     }
 
     /**
-     * Get a classical Petri Net
+     * Build a non-deterministic, simplified Petri Net
+     *
      * @return Workflow The normalized petri net
      */
     public function getNormalizedNet()

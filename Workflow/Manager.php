@@ -2,13 +2,12 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Workflow;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Common\Cache\Cache;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use Jerive\Bundle\WorkflowBundle\Workflow\Petri as Petri;
-use Jerive\Bundle\WorkflowBundle\Transition\TransitionInterface;
+use Jerive\Bundle\WorkflowBundle\Workflow\Storage\StorageInterface;
 use Jerive\Bundle\WorkflowBundle\Entity\CaseInterface;
 
 /**
@@ -18,16 +17,28 @@ use Jerive\Bundle\WorkflowBundle\Entity\CaseInterface;
  */
 class Manager
 {
+    /**
+     * @var ContainerInterface
+     */
     private $container;
 
-    protected $doctrine;
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $dispatcher;
+
+    /**
+     * @var StorageInterface
+     */
+    protected $storage;
 
     protected $cache;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, EventDispatcherInterface $dispatcher, StorageInterface $storage)
     {
-        $this->container = $container;
-        $this->doctrine  = $container->get('doctrine');
+        $this->storage    = $storage;
+        $this->container  = $container;
+        $this->dispatcher = $dispatcher;
     }
 
     public function registerWorkflow(Petri\Workflow $workflow)
@@ -46,41 +57,34 @@ class Manager
     }
 
     /**
-     * @param string $transition
+     * Execution of an activity
+     * ACID advance in the workflow
+     *
+     * @param Transition $transition
+     * @param CaseInterface $case
+     * @throws \Exception
      */
-    public function processTransition(Petri\Transition $transition, CaseInterface $case)
+    public function executeActivity(Petri\Transition $transition, CaseInterface $case)
     {
-        $this->getManager()->beginTransaction();
-
-        try {
-            /** @var TransitionInterface $service */
-            $service = $this->container->get($transition->getServiceId());
-            $service->fire($case);
-            $this->disableUnitsOfWork($transition, $case);
-            $this->enableUnitsOfWork($transition, $case);
-            $this->getManager()->flush();
-            $this->getManager()->commit();
-        } catch (\Exception $e) {
-            $this->getManager()->rollback();
-            throw $e;
+        if ($this->storage->isEnabled($transition, $case)) {
+            $this->storage->executeActivity($transition, $case, $this->container->get($transition->getServiceId()));
+        } else {
+            throw new \LogicException('Tried to trigger an unabled transaction');
         }
+
+        return $this;
     }
 
-    private function disableUnitsOfWork(Petri\Transition $transition, CaseInterface $case)
+    public function getEnabledTransitions(Petri\Workflow $workflow, CaseInterface $case)
     {
-
-    }
-
-    private function enableUnitsOfWork(Petri\Transition $transition, CaseInterface $case)
-    {
-
+        return $this->storage->getEnabledTransitions($place);
     }
 
     /**
-     * @return \Doctrine\ORM\EntityManager
+     * @return EventDispatcherInterface
      */
-    protected function getManager()
+    public function getDispatcher()
     {
-        return $this->doctrine->getManager();
+        return $this->dispatcher;
     }
 }

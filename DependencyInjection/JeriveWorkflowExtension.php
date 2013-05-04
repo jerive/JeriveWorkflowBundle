@@ -18,7 +18,7 @@ class JeriveWorkflowExtension extends Extension implements PrependExtensionInter
     public function prepend(ContainerBuilder $container)
     {
         $bundles = $container->getParameter('kernel.bundles');
-        // determine if AcmeGoodbyeBundle is registered
+        // determine if DoctrineBundle is registered
         if (!isset($bundles['DoctrineBundle'])) {
             throw new \Exception('Need the DoctrineBundle');
         }

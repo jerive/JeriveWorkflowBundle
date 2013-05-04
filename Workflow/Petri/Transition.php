@@ -26,11 +26,6 @@ class Transition extends Node
     /**
      * @Assert\Type(type="string")
      */
-    protected $class;
-
-    /**
-     * @Assert\Type(type="string")
-     */
     protected $serviceId;
 
     /**
@@ -49,16 +44,27 @@ class Transition extends Node
      */
     protected $join = self::SPLIT_AND;
 
-    public function isExplicitOrSplit()
-    {
-        return $this->split === self::SPLIT_OR;
-    }
-
+    /**
+     *
+     * @return bool
+     */
     public function isExplicitOrJoin()
     {
         return $this->join === self::SPLIT_OR;
     }
 
+    /**
+     *
+     * @return bool
+     */
+    public function isExplicitOrSplit()
+    {
+        return $this->split === self::SPLIT_OR;
+    }
+
+    /**
+     * @return string
+     */
     public function getType()
     {
         return $this->type;
@@ -67,11 +73,6 @@ class Transition extends Node
     public function getServiceId()
     {
         return $this->serviceId;
-    }
-
-    public function getClass()
-    {
-        return $this->class;
     }
 
     public static function getTypes()

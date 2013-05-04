@@ -6,10 +6,21 @@
 
     <parameters>
         <parameter key="jerive_workflow.manager.class">Jerive\Bundle\WorkflowBundle\Workflow\Manager</parameter>
+        <parameter key="jerive_workflow.manager.dispatcher.class">Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher</parameter>
+        <parameter key="jerive_workflow.manager.doctrine_storage.class">Jerive\Bundle\WorkflowBundle\Workflow\Storage\DoctrineStorage</parameter>
     </parameters>
     <services>
         <service id="jerive_workflow.manager" class="%jerive_workflow.manager.class%">
-
+            <argument type="service" id="service_container" />
+            <argument type="service">
+                <service class="%jerive_workflow.manager.dispatcher.class%">
+                    <argument type="service" id="service_container" />
+                </service>
+            </argument>
+            <argument type="service" id="jerive_workflow.manager.doctrine_storage" />
+        </service>
+        <service id="jerive_workflow.manager.doctrine_storage" class="%jerive_workflow.manager.doctrine_storage.class%" public="false">
+            <argument type="service" id="doctrine" />
         </service>
     </services>
 </container>

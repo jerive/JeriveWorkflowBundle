@@ -21,11 +21,45 @@ class Node
      */
     protected $title;
 
+    /**
+     * @var Workflow
+     * @Assert\NotBlank()
+     */
+    protected $workflow;
+
     public function __construct($options)
     {
         foreach(get_object_vars($this) as $key => $val) {
             $this->$key = isset($options[$key]) ? $options[$key] : $val;
         }
+    }
+
+    public function setWorkflow(Workflow $workflow)
+    {
+        if (isset($this->workflow)) {
+            throw new \Exception('Cannot reset workflow');
+        }
+
+        $this->workflow = $workflow;
+        return $this;
+    }
+
+    /**
+     * @return Workflow
+     */
+    public function getWorkflow()
+    {
+        return $this->workflow;
+    }
+
+    public function getOutputSet()
+    {
+        return $this->workflow->getOutputSet($this);
+    }
+
+    public function getInputSet()
+    {
+        return $this->workflow->getInputSet($this);
     }
 
     public function getName()
