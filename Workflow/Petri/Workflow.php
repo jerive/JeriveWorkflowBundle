@@ -13,6 +13,16 @@ use Symfony\Component\Validator\ExecutionContext;
 class Workflow
 {
     /**
+     * @Assert\NotBlank
+     */
+    protected $name;
+
+    /**
+     * @Assert\NotBlank
+     */
+    protected $title;
+
+    /**
      * @var Place
      * @Assert\NotBlank()
      */
@@ -48,7 +58,6 @@ class Workflow
 
     /**
      * Inverse relationship
-     *
      * @var array
      */
     protected $inverseTransitionsToPlaces = array();
@@ -225,15 +234,18 @@ class Workflow
     }
 
     /**
-     * Check if this Petri net connex
+     * Check that this Petri net is connected
      *
      * @return bool
      */
     public function isConnected()
     {
-        return $this->depthFirstWalk($this->getInput());
+        return $this->depthFirstTraversal($this->getInput());
     }
 
+    /**
+     * Check that this Petri net is strongly connected
+     */
     public function isStronglyConnected()
     {
         return count($this->getStronglyConnectedComponents()) === 1;
@@ -313,7 +325,7 @@ class Workflow
         return $node instanceof Transition ? 'getPlaceByName' : 'getTransitionByName';
     }
 
-    protected function depthFirstWalk($places, $transitions = array())
+    protected function depthFirstTraversal($places, $transitions = array())
     {
         if (!is_array($places)) {
             $places = array($places);
@@ -333,12 +345,14 @@ class Workflow
         if (count($places) === $countPlaces && count($transitions) === $countTransitions) {
             return count($this->places) === $countPlaces && count($this->transitions) === $countTransitions;
         } else {
-            return $this->depthFirstWalk($places, $transitions);
+            return $this->depthFirstTraversal($places, $transitions);
         }
     }
 
     /**
      * Implementation of Tarjan's algorithm
+     *
+     * @see http://fr.wikipedia.org/wiki/Algorithme_de_Tarjan#Pseudo-code
      */
     public function getStronglyConnectedComponents()
     {
@@ -348,7 +362,7 @@ class Workflow
 
         foreach(array_values($this->places) + array_values($this->transitions) as $node) {
             if (!isset($node->num)) {
-                $this->depthFirstWalkStrongConnectedness($node, $num, $partition, $stack);
+                $this->strongConnectednessDepthFirstTraversal($node, $num, $partition, $stack);
             }
         }
 
@@ -356,7 +370,7 @@ class Workflow
     }
 
     /**
-     * Depth first walk for Tarjan's algorithm
+     * Depth first traversal for Tarjan's algorithm
      *
      * @param \Node $node
      * @param int $num
@@ -364,7 +378,7 @@ class Workflow
      * @param array $stack
      * @return array
      */
-    private function depthFirstWalkStrongConnectedness(Node $node, &$num, &$partition, &$stack)
+    private function strongConnectednessDepthFirstTraversal(Node $node, &$num, &$partition, &$stack)
     {
         $node->num = $num;
         $node->numAccessible = $num;
@@ -384,7 +398,7 @@ class Workflow
 
         foreach($successors as $successor) {
             if (!isset($successor->num)) {
-                $this->depthFirstWalkStrongConnectedness($successor, $num, $partition, $stack);
+                $this->strongConnectednessDepthFirstTraversal($successor, $num, $partition, $stack);
                 $node->numAccessible = min($node->numAccessible, $successor->numAccessible);
             } elseif (isset($node->inStack)) {
                 $node->numAccessible = min($node->numAccessible, $successor->num);
