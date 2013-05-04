@@ -1,3 +1,6 @@
-Workflow management system using Petri nets in symfony2.
+Simple workflow system using Petri Nets
+=======================================
+
+Idea taken from this paper http://www.workflowpatterns.com/documentation/documents/vanderaalst98application.pdf
 
 Not ready!!!
