@@ -8,7 +8,7 @@ use Symfony\Component\Validator\ExecutionContext;
 /**
  * Description of Workflow
  *
- * @Assert\Callback(methods={"validateConnex"})
+ * @Assert\Callback(methods={"hasSpecialPlaces", "validateStrongConnectedness"})
  */
 class Workflow
 {
@@ -47,6 +47,19 @@ class Workflow
     protected $placesToTransitions = array();
 
     /**
+     * Inverse relationship
+     *
+     * @var array
+     */
+    protected $inverseTransitionsToPlaces = array();
+
+    /**
+     * Inverse relationship
+     * @var array
+     */
+    protected $inversePlacesToTransitions = array();
+
+    /**
      * Adds a link between two nodes
      *
      * @param Node $a
@@ -70,8 +83,10 @@ class Workflow
 
         if ($a instanceof Transition) {
             $this->transitionsToPlaces[$a->getName()][] = $b->getName();
+            $this->inverseTransitionsToPlaces[$b->getName()][] = $a->getName();
         } else {
             $this->placesToTransitions[$a->getName()][] = $b->getName();
+            $this->inversePlacesToTransitions[$b->getName()][] = $a->getName();
         }
 
         return $this;
@@ -91,7 +106,7 @@ class Workflow
             throw new \Exception('Cannot link two places nor two transitions');
         }
 
-        return array_search($b->getName(), $this->getChildren($a)) !== false;
+        return array_search($b->getName(), $this->getSuccessors($a)) !== false;
     }
 
     /**
@@ -138,24 +153,37 @@ class Workflow
         return $this;
     }
 
-    protected function setInput(Place $input)
+    /**
+     * Get the input set for the node
+     *
+     * @param Node $node
+     * @return array<Node>
+     */
+    public function getInputSet(Node $node)
     {
-        if (isset($this->input)) {
-            throw new Exception\IntegrityException('Cannot have two input nodes');
-        }
-
-        $this->input = $input;
-        return $this;
+        return $this->getSet($node, true);
     }
 
-    protected function setOutput(Place $output)
+    /**
+     * Get the output set for the node
+     *
+     * @param Node $node
+     * @return array<Node>
+     */
+    public function getOutputSet(Node $node)
     {
-        if (isset($this->output)) {
-            throw new Exception\IntegrityException('Cannot have two output nodes');
+        return $this->getSet($node);
+    }
+
+    private function getSet(Node $node, $output = false)
+    {
+        $set    = array();
+        $getter = $this->getTargetCallback($node);
+        foreach($this->getSuccessors($node, $output) as $name) {
+            $set[$name] = $this->$getter($name);
         }
 
-        $this->output = $output;
-        return $this;
+        return $set;
     }
 
     /**
@@ -175,43 +203,6 @@ class Workflow
     }
 
     /**
-     * Get the input set for the node
-     *
-     * @param Node $node
-     * @return array<Node>
-     */
-    public function getInputSet(Node $node)
-    {
-        $inputSet = array();
-        $getter   = $this->getTargetCallback($node);
-
-        foreach($this->getOriginalFullSet($node) as $name => $nodes) {
-            if (false !== array_search($node->getName(), $nodes)) {
-                $inputSet[$name] = $this->$getter($name);
-            }
-        }
-
-        return $inputSet;
-    }
-
-    /**
-     * Get the output set for the node
-     *
-     * @param Node $node
-     * @return array<Node>
-     */
-    public function getOutputSet(Node $node)
-    {
-        $outputSet = array();
-        $getter    = $this->getTargetCallback($node);
-        foreach($this->getChildren($node) as $name) {
-            $outputSet[$name] = $this->$getter($name);
-        }
-
-        return $outputSet;
-    }
-
-    /**
      * Return the place with name $name
      *
      * @param string $name
@@ -224,7 +215,7 @@ class Workflow
 
     /**
      * Return the transition with name $name
-     * 
+     *
      * @param string $name
      * @return Transition
      */
@@ -234,13 +225,77 @@ class Workflow
     }
 
     /**
+     * Check if this Petri net connex
+     *
+     * @return bool
+     */
+    public function isConnected()
+    {
+        return $this->depthFirstWalk($this->getInput());
+    }
+
+    public function isStronglyConnected()
+    {
+        return count($this->getStronglyConnectedComponents()) === 1;
+    }
+
+    public function validateConnected(ExecutionContext $ec)
+    {
+        if (!$this->isConnected()) {
+            $ec->addViolation('This workflow graph is not connected');
+        }
+    }
+
+    public function validateStrongConnectedness(ExecutionContext $ec)
+    {
+        $stronglyConnectedComponents = $this->getStronglyConnectedComponents();
+        $count = count($stronglyConnectedComponents);
+
+        if ($count !== 1) {
+            $ec->addViolation(sprintf('This workflow graph has %d strongly connected components and therefore is not a WF-net', $count));
+        }
+    }
+
+    public function hasSpecialPlaces()
+    {
+        return
+            count($this->getOutputSet($this->getOutput())) == 0 &&
+            count($this->getInputSet($this->getInput())) == 0
+        ;
+    }
+
+    private function setInput(Place $input)
+    {
+        if (isset($this->input)) {
+            throw new Exception\IntegrityException('Cannot have two input nodes');
+        }
+
+        $this->input = $input;
+        return $this;
+    }
+
+    private function setOutput(Place $output)
+    {
+        if (isset($this->output)) {
+            throw new Exception\IntegrityException('Cannot have two output nodes');
+        }
+
+        $this->output = $output;
+        return $this;
+    }
+
+    /**
      *
      * @param Node $node
      * @return array<Node>
      */
-    protected function getChildren(Node $node)
+    private function getSuccessors(Node $node, $inverse = false)
     {
-        $baseSet = $node instanceof Transition ? $this->transitionsToPlaces : $this->placesToTransitions;
+        if ($inverse) {
+            $baseSet = $node instanceof Transition ? $this->inversePlacesToTransitions : $this->inverseTransitionsToPlaces;
+        } else {
+            $baseSet = $node instanceof Transition ? $this->transitionsToPlaces : $this->placesToTransitions;
+        }
 
         if (isset($baseSet[$node->getName()])) {
             return $baseSet[$node->getName()];
@@ -249,33 +304,16 @@ class Workflow
         return array();
     }
 
-    protected function getOriginalFullSet(Node $node)
-    {
-        return $node instanceof Transition ? $this->placesToTransitions : $this->transitionsToPlaces;
-    }
-
     /**
      * @param Node $node
      * @return string
      */
-    protected function getTargetCallback(Node $node)
+    private function getTargetCallback(Node $node)
     {
         return $node instanceof Transition ? 'getPlaceByName' : 'getTransitionByName';
     }
 
-    public function validateConnex(ExecutionContext $ec)
-    {
-        if (!$this->isConnex()) {
-            $ec->addViolation('This workflow is not connex');
-        }
-    }
-
-    public function isConnex()
-    {
-        return $this->deepWalk($this->getInput());
-    }
-
-    protected function deepWalk($places, $transitions = array())
+    protected function depthFirstWalk($places, $transitions = array())
     {
         if (!is_array($places)) {
             $places = array($places);
@@ -295,7 +333,72 @@ class Workflow
         if (count($places) === $countPlaces && count($transitions) === $countTransitions) {
             return count($this->places) === $countPlaces && count($this->transitions) === $countTransitions;
         } else {
-            return $this->deepWalk($places, $transitions);
+            return $this->depthFirstWalk($places, $transitions);
+        }
+    }
+
+    /**
+     * Implementation of Tarjan's algorithm
+     */
+    public function getStronglyConnectedComponents()
+    {
+        $num   = 0;
+        $stack = [];
+        $partition = [];
+
+        foreach(array_values($this->places) + array_values($this->transitions) as $node) {
+            if (!isset($node->num)) {
+                $this->depthFirstWalkStrongConnectedness($node, $num, $partition, $stack);
+            }
+        }
+
+        return $partition;
+    }
+
+    /**
+     * Depth first walk for Tarjan's algorithm
+     *
+     * @param \Node $node
+     * @param int $num
+     * @param array $partition
+     * @param array $stack
+     * @return array
+     */
+    private function depthFirstWalkStrongConnectedness(Node $node, &$num, &$partition, &$stack)
+    {
+        $node->num = $num;
+        $node->numAccessible = $num;
+        $node->inStack = true;
+        $num++;
+        $stack[] = $node;
+
+        $successors = $this->getOutputSet($node);
+
+        /**
+         * Strong connectedness is interesting
+         * for a workflow graph with this additional link
+         */
+        if ($node instanceof Place && $node->isOutput()) {
+            $successors[] = $this->getInput();
+        }
+
+        foreach($successors as $successor) {
+            if (!isset($successor->num)) {
+                $this->depthFirstWalkStrongConnectedness($successor, $num, $partition, $stack);
+                $node->numAccessible = min($node->numAccessible, $successor->numAccessible);
+            } elseif (isset($node->inStack)) {
+                $node->numAccessible = min($node->numAccessible, $successor->num);
+            }
+        }
+
+        if ($node->numAccessible == $successor->num) {
+            $set = [];
+            do {
+                $popped = array_pop($stack);
+                unset($popped->inStack);
+                $set[] = $popped;
+            } while ($node !== $popped);
+            $partition[] = $set;
         }
     }
 }

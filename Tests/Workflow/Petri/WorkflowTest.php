@@ -19,7 +19,7 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('toto', $wf->getInput()->getName());
         $this->assertEquals('lolo', $wf->getOutput()->getName());
 
-        $this->assertFalse($wf->isConnex());
+        $this->assertFalse($wf->isConnected());
     }
 
     /**
@@ -79,15 +79,17 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
                 $p = new Place(array('name' => 'place', 'input' => true)),
                 $t = new Transition(array('name' => 'trans'))
             )
+            ->addLink($t, new Place(array('name' => 'output', 'output' => true)))
         ;
 
-        $this->assertEmpty($wf->getOutputSet($t));
+        $this->assertCount(1, $wf->getOutputSet($t));
         $this->assertEmpty($wf->getInputSet($p));
         $this->assertCount(1, $wf->getInputSet($t));
         $this->assertCount(1, $wf->getOutputSet($p));
         $this->assertArrayHasKey('trans', $wf->getOutputSet($p));
         $this->assertArrayHasKey('place', $wf->getInputSet($t));
-        $this->assertTrue($wf->isConnex());
+        $this->assertTrue($wf->isConnected());
+        $this->assertTrue($wf->isStronglyConnected());
     }
 
     /**

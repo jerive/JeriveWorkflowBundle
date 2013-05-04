@@ -11,6 +11,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Transition extends Node
 {
+    const TRIGGER_AUTO = 'auto';
+
+    const TRIGGER_USER = 'user';
+
+    const TRIGGER_CRON = 'cron';
+
+    const TRIGGER_MESS = 'mess';
+
+    const SPLIT_OR     = 'or';
+
+    const SPLIT_AND    = 'and';
+
     /**
      * @Assert\Type(type="string")
      */
@@ -22,10 +34,20 @@ class Transition extends Node
     protected $serviceId;
 
     /**
-     * @var string
-     * @Assert\NotBlank')
+     * @Assert\NotBlank()
+     * @Assert\Choice(callback="getTypes")
      */
-    protected $type;
+    protected $type = self::TRIGGER_USER;
+
+    /**
+     * @Assert\Choice(callback="getSplits")
+     */
+    protected $split = self::SPLIT_AND;
+
+    /**
+     * @Assert\Choice(callback="getSplits")
+     */
+    protected $join = self::SPLIT_AND;
 
     public function getType()
     {
@@ -40,5 +62,23 @@ class Transition extends Node
     public function getClass()
     {
         return $this->class;
+    }
+
+    public static function getTypes()
+    {
+        return array(
+            self::TRIGGER_AUTO,
+            self::TRIGGER_CRON,
+            self::TRIGGER_MESS,
+            self::TRIGGER_USER,
+        );
+    }
+
+    public static function getSplits()
+    {
+        return array(
+            self::SPLIT_AND,
+            self::SPLIT_OR,
+        );
     }
 }
