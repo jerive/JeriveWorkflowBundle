@@ -6,8 +6,6 @@ abstract class Token implements HasCaseInterface
 {
     protected $id;
 
-    protected $workflow;
-
     protected $place;
 
     protected $created_date;
@@ -26,17 +24,6 @@ abstract class Token implements HasCaseInterface
     public function getPlace()
     {
         return $this->place;
-    }
-
-    public function setWorkflow($workflow)
-    {
-        $this->workflow = $workflow;
-        return $this;
-    }
-
-    public function getWorkflow()
-    {
-        return $this->workflow;
     }
 
     public function prePersist()
