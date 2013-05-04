@@ -1,5 +1,8 @@
+JeriveProcessingBundle
+======================
+
 Simple workflow system using Petri Nets
-=======================================
+---------------------------------------
 
 [![Build Status](https://travis-ci.org/jerive/JeriveWorkflowBundle.png?branch=master)](https://travis-ci.org/jerive/JeriveWorkflowBundle)
 
