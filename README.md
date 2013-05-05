@@ -1,4 +1,4 @@
-JeriveProcessingBundle
+JeriveWorkflowBundle
 ======================
 
 Simple workflow system using Petri Nets
