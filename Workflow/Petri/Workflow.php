@@ -520,4 +520,9 @@ class Workflow
 
         return $this;
     }
+
+    public function __clone()
+    {
+        $this->frozen = false;
+    }
 }
