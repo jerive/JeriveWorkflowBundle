@@ -67,7 +67,7 @@ class Node
         return $this->name;
     }
 
-    protected function getTitle()
+    public function getTitle()
     {
         return $this->title;
     }
