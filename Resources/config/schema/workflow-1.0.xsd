@@ -1,8 +1,4 @@
 <?xml version="1.0"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 
 <xs:schema version="1.0"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -10,28 +6,48 @@ and open the template in the editor.
     <xs:element name="workflows">
         <xs:complexType>
             <xs:choice>
-                <xs:element name="workflow" type="workflow" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="workflow" type="workflow" minOccurs="1" maxOccurs="unbounded">
+                    <xs:unique name="placeKeyUnique">
+                        <xs:selector xpath="place" />
+                        <xs:field    xpath="@name" />
+                    </xs:unique>
+                    <xs:unique name="transitionKeyUnique">
+                        <xs:selector xpath="transition" />
+                        <xs:field    xpath="@name" />
+                    </xs:unique>
+                </xs:element>
             </xs:choice>
         </xs:complexType>
     </xs:element>
     <xs:complexType name="workflow">
-        <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="transition" type="transition" />
-            <xs:element name="place" type="place" />
-        </xs:choice>
-        <xs:attribute name="name" type="xs:string" />
-        <xs:attribute name="title" type="xs:string" />
+        <xs:complexContent>
+            <xs:extension base="node">
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="transition" type="transition" maxOccurs="unbounded" >
+                        <xs:keyref name="placeOutputRef" refer="placeKeyUnique">
+                            <xs:selector xpath="output" />
+                            <xs:field    xpath="@ref" />
+                        </xs:keyref>
+                    </xs:element>
+                    <xs:element name="place" type="place" />
+                </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="node">
+        <xs:attribute name="name" type="xs:string"></xs:attribute>
+        <xs:attribute name="title" type="xs:string"></xs:attribute>
     </xs:complexType>
     <xs:complexType name="transition" id="transition">
         <xs:complexContent>
             <xs:extension base="node">
-                <xs:choice>
-                    <xs:element name="input" minOccurs="1" maxOccurs="unbounded" />
-                    <xs:element name="output" minOccurs="1" maxOccurs="unbounded" />
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="input" type="placereference" />
+                    <xs:element name="output" type="placereference" />
                 </xs:choice>
-                <xs:attribute name="service" type="xs:string"></xs:attribute>
-                <xs:attribute name="split" type="and_or_or" default="and"></xs:attribute>
-                <xs:attribute name="join" type="and_or_or" default="and"></xs:attribute>
+                <xs:attribute name="service" type="xs:string" />
+                <xs:attribute name="split" type="and_or_or" default="and" />
+                <xs:attribute name="join" type="and_or_or" default="and" />
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -43,14 +59,13 @@ and open the template in the editor.
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-    <xs:complexType name="node">
-        <xs:attribute name="name" type="xs:string"></xs:attribute>
-        <xs:attribute name="title" type="xs:string"></xs:attribute>
-    </xs:complexType>
     <xs:simpleType name="and_or_or">
         <xs:restriction base="xs:string">
             <xs:enumeration value="and" />
             <xs:enumeration value="or" />
         </xs:restriction>
     </xs:simpleType>
+    <xs:complexType name="placereference">
+        <xs:attribute name="ref" use="required"></xs:attribute>
+    </xs:complexType>
 </xs:schema>
