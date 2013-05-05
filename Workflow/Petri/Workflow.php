@@ -69,6 +69,11 @@ class Workflow
     protected $inversePlacesToTransitions = array();
 
     /**
+     * @var bool
+     */
+    protected $frozen = false;
+
+    /**
      * Adds a link between two nodes
      *
      * @param Node $a
@@ -78,6 +83,8 @@ class Workflow
      */
     public function addLink(Node $a, Node $b)
     {
+        $this->checkAlterable();
+
         if ($this->isLinked($a, $b)) {
             throw new Exception\IntegrityException('Trying to link two linked nodes');
         }
@@ -142,6 +149,8 @@ class Workflow
      */
     public function addNode(Node $node)
     {
+        $this->checkAlterable();
+
         if ($this->hasNode($node)) {
             throw new Exception\IntegrityException(sprintf('Node %s already exists', $node->getName()));
         }
@@ -195,6 +204,27 @@ class Workflow
         }
 
         return $set;
+    }
+
+    public function freeze()
+    {
+        $this->frozen = true;
+        return $this;
+    }
+
+    public function isFrozen()
+    {
+        return $this->frozen;
+    }
+
+    /**
+     * @throws Exception\IntegrityException
+     */
+    private function checkAlterable()
+    {
+        if ($this->isFrozen()) {
+            throw new Exception\IntegrityException('Cannot alter a frozen workflow');
+        }
     }
 
     /**
@@ -463,8 +493,13 @@ class Workflow
         return $normalized;
     }
 
+    /**
+     *
+     */
     public function removeNode(Node $node)
     {
+        $this->checkAlterable();
+
         if (!$this->hasNode($node)) {
             throw new \LogicException('Cannot remove an unexisting node');
         }
@@ -472,8 +507,17 @@ class Workflow
         if ($node instanceof Transition) {
             unset($this->transitions[$node->getName()]);
             unset($this->transitionsToPlaces[$node->getName()]);
+            foreach($this->inverseTransitionsToPlaces as &$nodes) {
+                unset($nodes[array_search($node->getName(), $nodes)]);
+            }
         } else {
             unset($this->places[$node->getName()]);
+            unset($this->placesToTransitions[$node->getName()]);
+            foreach($this->inversePlacesToTransitions as &$nodes) {
+                unset($nodes[array_search($node->getName(), $nodes)]);
+            }
         }
+
+        return $this;
     }
 }
