@@ -77,7 +77,7 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
         $wf
             ->addLink(
                 $p = new Place(array('name' => 'place', 'input' => true)),
-                $t = new Transition(array('name' => 'trans'))
+                $t = new Transition(array('name' => 'trans', 'join' => 'or'))
             )
             ->addLink($t, new Place(array('name' => 'output', 'output' => true)))
         ;
@@ -91,6 +91,7 @@ class DefaultControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($wf->isConnected());
         $this->assertTrue($wf->isStronglyConnected());
         $this->assertTrue($wf->hasSpecialPlaces());
+        $wf->getNormalizedNet();
     }
 
     /**
