@@ -22,6 +22,8 @@
 
         <field name="processed_date" type="datetime" nullable="true"/>
 
+        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Task" field="task" />
+
         <lifecycle-callbacks>
             <lifecycle-callback type="prePersist" method="prePersist"/>
         </lifecycle-callbacks>

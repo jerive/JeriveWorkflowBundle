@@ -47,6 +47,7 @@ class Manager
     }
 
     /**
+     * Get a workflow by name
      *
      * @param string $name
      * @return Petri\Workflow

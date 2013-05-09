@@ -13,7 +13,7 @@ abstract class UnitOfWork implements HasCaseInterface
 
     protected $hash;
 
-    protected $transition;
+    protected $task;
 
     protected $created_date;
 
@@ -29,14 +29,17 @@ abstract class UnitOfWork implements HasCaseInterface
         return $this->hash;
     }
 
-    public function getTransition()
+    /**
+     * @return Task
+     */
+    public function getTask()
     {
-        return $this->transition;
+        return $this->task;
     }
 
-    public function setTransition($transition)
+    public function setTask(Task $task)
     {
-        $this->transition = $transition;
+        $this->task = $task;
         return $this;
     }
 
