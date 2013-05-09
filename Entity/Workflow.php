@@ -2,35 +2,16 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Entity;
 
-use Jerive\Workflow\Petri\Workflow as BaseWorkflow;
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * @ORM\Entity()
- * @ORM\Table(name="jerive_workflow")
- */
-class Workflow extends BaseWorkflow
+class Workflow
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
     protected $id;
 
-    /**
-     * @ORM\Column(type="string", unique=true)
-     */
     protected $name;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Task")
-     */
+    protected $title;
+
     protected $tasks;
 
-    /**
-     * @ORM\OneToMany(targetEntity="Condition")
-     */
     protected $conditions;
 
     public function getId()
@@ -48,5 +29,15 @@ class Workflow extends BaseWorkflow
         $this->name = $name;
         return $this;
     }
-}
 
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    public function setTitle($title)
+    {
+        $this->title = $title;
+        return $this;
+    }
+}

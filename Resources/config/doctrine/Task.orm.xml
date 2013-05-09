@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                  http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="Jerive\Bundle\WorkflowBundle\Entity\Task" table="jerive_wf_task">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO" />
+        </id>
+
+        <field name="name" type="string" unique="true" />
+
+        <field name="title" type="string" />
+
+        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Condition" field="inputSet">
+            <join-table name="jerive_wf_task_condition_input">
+                <join-columns>
+                    <join-column name="task_id" referenced-column-name="id" nullable="false"/>
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="condition_id" referenced-column-name="id" />
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+
+        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Condition" field="outputSet" >
+            <join-table name="jerive_wf_task_condition_output">
+                <join-columns>
+                    <join-column name="task_id" referenced-column-name="id" nullable="false"  />
+                </join-columns>
+                <inverse-join-columns>
+                    <join-column name="condition_id" referenced-column-name="id" />
+                </inverse-join-columns>
+            </join-table>
+        </many-to-many>
+        <many-to-one target-entity="Workflow" field="workflow" />
+    </entity>
+</doctrine-mapping>

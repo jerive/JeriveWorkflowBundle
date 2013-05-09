@@ -5,26 +5,12 @@ namespace Jerive\Bundle\WorkflowBundle\Entity;
 use Jerive\Workflow\Petri\Condition as BaseCondition;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Entity()
- */
-class Condition extends BaseCondition
+class Condition
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
     protected $id;
 
-    /**
-     * @ORM\Column(type="string", unique=true)
-     */
     protected $name;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Workflow")
-     */
     protected $workflow;
 
     public function getId()
@@ -40,6 +26,12 @@ class Condition extends BaseCondition
     public function setName($name)
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function setWorkflow(Workflow $workflow)
+    {
+        $this->workflow = $workflow;
         return $this;
     }
 }

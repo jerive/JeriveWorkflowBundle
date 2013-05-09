@@ -15,9 +15,9 @@ abstract class Token implements HasCaseInterface
         return $this->id;
     }
 
-    public function setCondition($place)
+    public function setCondition($condition)
     {
-        $this->condition = $place;
+        $this->condition = $condition;
         return $this;
     }
 
