@@ -14,6 +14,14 @@
 
         <field name="title" type="string" />
 
+        <field name="serviceId" type="string" />
+
+        <field name="split" type="string" />
+
+        <field name="join" type="string" />
+
+        <field name="trigger" type="string" />
+
         <many-to-many target-entity="Condition" field="inputSet">
             <join-table name="jerive_wf_task_condition_input">
                 <join-columns>
