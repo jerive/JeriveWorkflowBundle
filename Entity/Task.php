@@ -10,8 +10,6 @@ class Task extends BaseTask
 {
     protected $id;
 
-    protected $name;
-
     protected $outputSet;
 
     protected $inputSet;
@@ -25,16 +23,5 @@ class Task extends BaseTask
     public function getId()
     {
         return $this->id;
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-        return $this;
     }
 }
