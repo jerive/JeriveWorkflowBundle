@@ -6,7 +6,6 @@
 
     <mapped-superclass name="Jerive\Bundle\WorkflowBundle\Entity\UnitOfWork">
         <indexes>
-            <index columns="transition"/>
             <index columns="created_date"/>
         </indexes>
 
@@ -16,13 +15,11 @@
 
         <field name="hash" type="string" length="32" />
 
-        <field name="transition" type="text" />
-
         <field name="created_date" type="datetime" />
 
         <field name="processed_date" type="datetime" nullable="true"/>
 
-        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Task" field="task" />
+        <many-to-one target-entity="Jerive\Bundle\WorkflowBundle\Entity\Task" field="task" />
 
         <lifecycle-callbacks>
             <lifecycle-callback type="prePersist" method="prePersist"/>

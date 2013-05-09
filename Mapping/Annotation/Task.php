@@ -4,27 +4,27 @@ namespace Jerive\Bundle\WorkflowBundle\Mapping\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 
-use Jerive\Bundle\WorkflowBundle\Workflow\Petri\Transition;
+use Jerive\Bundle\WorkflowBundle\Workflow\Petri\Task;
 
 /**
  * @Annotation
  * @Target("CLASS")
  */
-final class Transition extends Annotation
+final class Task extends Annotation
 {
     /** @var string */
     public $workflow = 'default';
     /** @var string */
     public $serviceId;
     /** @var string */
-    public $join    = Transition::SPLIT_AND;
+    public $join    = Task::SPLIT_AND;
     /** @var string */
-    public $split   = Transition::SPLIT_AND;
+    public $split   = Task::SPLIT_AND;
     /** @var string */
-    public $trigger = Transition::TRIGGER_AUTO;
-    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Place> */
+    public $trigger = Task::TRIGGER_AUTO;
+    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Condition> */
     public $input = array();
-    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Place> */
+    /** @var array<\Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Condition> */
     public $output = array();
 
     public function getServiceId()

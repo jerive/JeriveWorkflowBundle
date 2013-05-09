@@ -6,10 +6,10 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Finder\Finder;
 
-use Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Transition;
-use Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Place;
+use Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Task;
+use Jerive\Bundle\WorkflowBundle\Mapping\Annotation\Condition;
 
-use Jerive\Bundle\WorkflowBundle\Transition\TransitionInterface;
+use Jerive\Bundle\WorkflowBundle\Task\TaskInterface;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 
@@ -20,45 +20,45 @@ use Doctrine\Common\Annotations\AnnotationReader;
  */
 class PetriNetBuildPass implements CompilerPassInterface
 {
-    protected $places = array();
+    protected $conditions = array();
 
-    protected $transitions = array();
+    protected $tasks = array();
 
     public function process(ContainerBuilder $container)
     {
         $baseAnnotation = 'Jerive\\Bundle\\WorkflowBundle\\Mapping\\Annotation\\';
-        $annotationTransition = $baseAnnotation . 'Transition';
-        $annotationPlace = $baseAnnotation . 'Place';
+        $annotationTask = $baseAnnotation . 'Task';
+        $annotationCondition = $baseAnnotation . 'Condition';
         $reader = new AnnotationReader;
         foreach($container->getParameter('kernel.bundles') as $bundleClass) {
             if (is_dir($dir = dirname((new \ReflectionClass($bundleClass))->getFileName()) . '/Workflow')) {
                 foreach((new Finder)->files()->name('*.php')->in($dir) as $file) {
                     try {
                         $class = new \ReflectionClass($this->getFirstClassInFile($file));
-                        $this->addTransition($class, $reader->getClassAnnotation($class, $annotationTransition));
-                        $this->addPlace($class, $reader->getClassAnnotation($class, $annotationPlace));
+                        $this->addTask($class, $reader->getClassAnnotation($class, $annotationTask));
+                        $this->addCondition($class, $reader->getClassAnnotation($class, $annotationCondition));
                     } catch (\ReflectionException $e) { }
                 }
             }
         }
     }
 
-    protected function addPlace(\ReflectionClass $class, Place $place = null)
+    protected function addCondition(\ReflectionClass $class, Condition $condition = null)
     {
         //TODO
     }
 
-    protected function addTransition(\ReflectionClass $class, Transition $transition = null)
+    protected function addTask(\ReflectionClass $class, Task $task = null)
     {
-        $baseInterface = 'Jerive\\Bundle\\WorkflowBundle\\Transition\\';
+        $baseInterface = 'Jerive\\Bundle\\WorkflowBundle\\Task\\';
 
-        if ($transition) {
-            switch ($transition->trigger) {
-                case TransitionInterface::TRIGGER_AUTO:
-                    $class->implementsInterface($baseInterface . 'AutomaticTransitionInterface');
+        if ($task) {
+            switch ($task->trigger) {
+                case TaskInterface::TRIGGER_AUTO:
+                    $class->implementsInterface($baseInterface . 'AutomaticTaskInterface');
                     break;
                 default:
-                    throw new \Exception(sprintf('Unable to find trigger type %s', $transition->trigger));
+                    throw new \Exception(sprintf('Unable to find trigger type %s', $task->trigger));
             }
         }
     }

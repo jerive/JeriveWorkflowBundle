@@ -19,6 +19,8 @@
 
         <field name="created_date" type="datetime" />
 
+        <many-to-one target-entity="Jerive\Bundle\WorkflowBundle\Entity\Condition" field="condition" />
+
         <lifecycle-callbacks>
             <lifecycle-callback type="prePersist" method="prePersist"/>
         </lifecycle-callbacks>

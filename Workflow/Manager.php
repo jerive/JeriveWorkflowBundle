@@ -61,14 +61,14 @@ class Manager
      * Execution of an activity
      * ACID advance in the workflow
      *
-     * @param Transition $transition
+     * @param Task $task
      * @param CaseInterface $case
      * @throws \Exception
      */
-    public function executeActivity(Petri\Transition $transition, CaseInterface $case)
+    public function executeActivity(Petri\Task $task, CaseInterface $case)
     {
-        if ($this->storage->isEnabled($transition, $case)) {
-            $this->storage->executeActivity($transition, $case, $this->container->get($transition->getServiceId()));
+        if ($this->storage->isEnabled($task, $case)) {
+            $this->storage->executeActivity($task, $case, $this->container->get($task->getServiceId()));
         } else {
             throw new \LogicException('Tried to trigger an unabled transaction');
         }
@@ -76,9 +76,9 @@ class Manager
         return $this;
     }
 
-    public function getEnabledTransitions(Petri\Workflow $workflow, CaseInterface $case)
+    public function getEnabledTasks(Petri\Workflow $workflow, CaseInterface $case)
     {
-        return $this->storage->getEnabledTransitions($place);
+        return $this->storage->getEnabledTasks($condition);
     }
 
     /**

@@ -6,7 +6,7 @@ use Doctrine\Bundle\DoctrineBundle\Registry;
 
 use Jerive\Bundle\WorkflowBundle\Workflow\Petri as Petri;
 use Jerive\Bundle\WorkflowBundle\Entity\CaseInterface;
-use Jerive\Bundle\WorkflowBundle\Transition\TransitionInterface;
+use Jerive\Bundle\WorkflowBundle\Task\TaskInterface;
 
 /**
  * Description of DatabaseStorage
@@ -34,25 +34,25 @@ class DoctrineStorage implements StorageInterface
         $this->doctrine = $doctrine;
     }
 
-    public function getEnabledTransitions(Petri\Place $place)
+    public function getEnabledTasks(Petri\Place $place)
     {
 
     }
 
     /**
      * @see {@link StorageInterface::executeActivity }
-     * @param Transition $transition
+     * @param Task $task
      * @param CaseInterface $case
-     * @param TransitionInterface $service
+     * @param TaskInterface $service
      * @throws \Exception
      */
-    public function executeActivity(Petri\Transition $transition, CaseInterface $case, TransitionInterface $service)
+    public function executeActivity(Petri\Task $task, CaseInterface $case, TaskInterface $service)
     {
         $this->getManager()->beginTransaction();
 
         try {
             $service->fire($case);
-            $this->updateInternalState($transition, $case);
+            $this->updateInternalState($task, $case);
             $this->getManager()->flush();
             $this->getManager()->commit();
         } catch (\Exception $e) {
@@ -61,43 +61,43 @@ class DoctrineStorage implements StorageInterface
         }
     }
 
-    public function isEnabled(Petri\Transition $transition, Caseinterface $case)
+    public function isEnabled(Petri\Task $task, Caseinterface $case)
     {
         $qb = $this->getRepository($case)->createQueryBuilder('c');
 
     }
 
-    private function updateInternalState(Petri\Transition $transition, CaseInterface $case)
+    private function updateInternalState(Petri\Task $task, CaseInterface $case)
     {
-        if ($transition->isExplicitOrJoin()) {
+        if ($task->isExplicitOrJoin()) {
 
         }
 
-        if ($transition->isExplicitOrSplit()) {
+        if ($task->isExplicitOrSplit()) {
 
         }
 
     }
 
-    private function getAlterableOriginSet(Petri\Transition $transition, CaseInterface $case)
+    private function getAlterableOriginSet(Petri\Task $task, CaseInterface $case)
     {
-        foreach($transition->getInputSet() as $place) {
+        foreach($task->getInputSet() as $place) {
             foreach($place->getOutputSet() as $toBeDisabled) {
 
             }
         }
     }
 
-    private function getAlterableTargetSet(Petri\Transition $transition, CaseInterface $case)
+    private function getAlterableTargetSet(Petri\Task $task, CaseInterface $case)
     {
-        foreach($transition->getOutputSet() as $place) {
+        foreach($task->getOutputSet() as $place) {
             foreach($place->getOutputSet() as $toBeEnabled) {
 
             }
         }
     }
 
-    public function getAllEnabledTransitions(Petri\Workflow $workflow, CaseInterface $case)
+    public function getAllEnabledTasks(Petri\Workflow $workflow, CaseInterface $case)
     {
 
     }

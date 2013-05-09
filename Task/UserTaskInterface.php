@@ -1,11 +1,11 @@
 <?php
 
-namespace Jerive\Bundle\WorkflowBundle\Transition;
+namespace Jerive\Bundle\WorkflowBundle\Task;
 
 /**
  *
  */
-interface UserTransitionInterface extends TransitionInterface
+interface UserTaskInterface extends TaskInterface
 {
     public function ask();
 

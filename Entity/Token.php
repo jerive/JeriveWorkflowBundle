@@ -6,7 +6,7 @@ abstract class Token implements HasCaseInterface
 {
     protected $id;
 
-    protected $place;
+    protected $condition;
 
     protected $created_date;
 
@@ -15,15 +15,15 @@ abstract class Token implements HasCaseInterface
         return $this->id;
     }
 
-    public function setPlace($place)
+    public function setCondition($place)
     {
-        $this->place = $place;
+        $this->condition = $place;
         return $this;
     }
 
-    public function getPlace()
+    public function getCondition()
     {
-        return $this->place;
+        return $this->condition;
     }
 
     public function prePersist()
