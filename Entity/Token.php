@@ -15,12 +15,15 @@ abstract class Token implements HasCaseInterface
         return $this->id;
     }
 
-    public function setCondition($condition)
+    public function setCondition(Condition $condition)
     {
         $this->condition = $condition;
         return $this;
     }
 
+    /**
+     * @return Condition
+     */
     public function getCondition()
     {
         return $this->condition;

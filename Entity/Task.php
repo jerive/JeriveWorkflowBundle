@@ -2,25 +2,15 @@
 
 namespace Jerive\Bundle\WorkflowBundle\Entity;
 
+use Jerive\Workflow\Petri\Task as BaseTask;
+
 use Doctrine\Common\Collections\ArrayCollection;
 
-class Task
+class Task extends BaseTask
 {
     protected $id;
 
     protected $name;
-
-    protected $title;
-
-    protected $type;
-
-    protected $split;
-
-    protected $join;
-
-    protected $serviceId;
-
-    protected $workflow;
 
     protected $outputSet;
 

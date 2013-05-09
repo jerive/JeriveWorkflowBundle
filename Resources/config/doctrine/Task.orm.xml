@@ -14,7 +14,7 @@
 
         <field name="title" type="string" />
 
-        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Condition" field="inputSet">
+        <many-to-many target-entity="Condition" field="inputSet">
             <join-table name="jerive_wf_task_condition_input">
                 <join-columns>
                     <join-column name="task_id" referenced-column-name="id" nullable="false"/>
@@ -25,7 +25,7 @@
             </join-table>
         </many-to-many>
 
-        <many-to-many target-entity="Jerive\Bundle\WorkflowBundle\Entity\Condition" field="outputSet" >
+        <many-to-many target-entity="Condition" field="outputSet" >
             <join-table name="jerive_wf_task_condition_output">
                 <join-columns>
                     <join-column name="task_id" referenced-column-name="id" nullable="false"  />

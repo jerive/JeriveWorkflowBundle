@@ -12,6 +12,6 @@
 
         <field name="name" type="string" unique="true" />
 
-        <many-to-one target-entity="Jerive\Bundle\WorkflowBundle\Entity\Workflow" field="workflow" />
+        <many-to-one target-entity="Workflow" field="workflow" />
     </entity>
 </doctrine-mapping>
